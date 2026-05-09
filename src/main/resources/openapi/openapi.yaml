@@ -1,0 +1,285 @@
+openapi: 3.0.3
+info:
+  title: Spring Boot API Demo Progra 3
+  version: 1.0.0
+  description: API del taller Spring Boot con enfoque contract-first
+  contact:
+    name: Angello Escobar
+    email: aescobarg21@miumg.edu.gt
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: workshop
+    description: Endpoints base del workshop
+  - name: simulaciones
+    description: Endpoints de simulaciones
+  - name: demo-estado
+    description: Demostracion de estado singleton y manual
+paths:
+  /api/v1:
+    get:
+      tags:
+        - workshop
+      operationId: getWorkshopHealth
+      summary: Estado del workshop
+      responses:
+        '200':
+          description: Workshop activo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkshopHealthResponse'
+  /api/v1/saludos:
+    get:
+      tags:
+        - workshop
+      operationId: saludarPorGet
+      summary: Saludo por GET
+      parameters:
+        - name: nombre
+          in: query
+          required: false
+          schema:
+            type: string
+            default: Mundo
+      responses:
+        '200':
+          description: Saludo generado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaludoResponse'
+        '400':
+          description: Error de negocio
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - workshop
+      operationId: saludarPorPost
+      summary: Saludo por POST
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaludoRequest'
+      responses:
+        '200':
+          description: Saludo generado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaludoResponse'
+        '400':
+          description: Error de validacion
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/simulaciones/prestamo:
+    post:
+      tags:
+        - simulaciones
+      operationId: simularPrestamo
+      summary: Simular prestamo con cuota fija
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SimulacionPrestamoRequest'
+      responses:
+        '200':
+          description: Resultado de la simulacion
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimulacionPrestamoResponse'
+        '400':
+          description: Error de validacion o negocio
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/demo/estado/singleton/{valor}:
+    post:
+      tags:
+        - demo-estado
+      operationId: actualizarSingleton
+      summary: Actualizar valor singleton
+      parameters:
+        - name: valor
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Estado actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstadoResponse'
+  /api/v1/demo/estado/singleton:
+    get:
+      tags:
+        - demo-estado
+      operationId: obtenerSingleton
+      summary: Obtener valor singleton
+      responses:
+        '200':
+          description: Estado actual
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstadoResponse'
+  /api/v1/demo/estado/singleton/reset:
+    post:
+      tags:
+        - demo-estado
+      operationId: reiniciarSingleton
+      summary: Reiniciar valor singleton
+      responses:
+        '200':
+          description: Estado reiniciado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstadoResponse'
+  /api/v1/demo/estado/manual/{valor}:
+    post:
+      tags:
+        - demo-estado
+      operationId: actualizarManual
+      summary: Actualizar valor manual
+      parameters:
+        - name: valor
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Estado actualizado manualmente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstadoResponse'
+  /api/v1/demo/estado/manual:
+    get:
+      tags:
+        - demo-estado
+      operationId: obtenerManual
+      summary: Obtener valor manual
+      responses:
+        '200':
+          description: Estado manual actual
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstadoResponse'
+components:
+  schemas:
+    WorkshopHealthResponse:
+      type: object
+      required:
+        - estado
+        - mensaje
+      properties:
+        estado:
+          type: string
+          example: ok
+        mensaje:
+          type: string
+          example: Workshop Spring Boot activo
+    SaludoRequest:
+      type: object
+      required:
+        - nombre
+      properties:
+        nombre:
+          type: string
+          minLength: 1
+          maxLength: 50
+          example: Ana
+    SaludoResponse:
+      type: object
+      required:
+        - mensaje
+        - timestamp
+      properties:
+        mensaje:
+          type: string
+          example: Hola, Ana. Bienvenido a Spring Boot 3!
+        timestamp:
+          type: string
+          format: date-time
+    SimulacionPrestamoRequest:
+      type: object
+      required:
+        - monto
+        - tasaAnual
+        - meses
+      properties:
+        monto:
+          type: number
+          minimum: 0.01
+          example: 5000
+        tasaAnual:
+          type: number
+          minimum: 0.01
+          example: 12
+        meses:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 360
+          example: 12
+    SimulacionPrestamoResponse:
+      type: object
+      required:
+        - cuotaMensual
+        - interesTotal
+        - totalPagar
+      properties:
+        cuotaMensual:
+          type: number
+          example: 444.24
+        interesTotal:
+          type: number
+          example: 330.88
+        totalPagar:
+          type: number
+          example: 5330.88
+    EstadoResponse:
+      type: object
+      required:
+        - tipo
+        - valorActual
+      properties:
+        tipo:
+          type: string
+          example: singleton
+        valorActual:
+          type: integer
+          format: int32
+          example: 25
+    ErrorResponse:
+      type: object
+      properties:
+        codigo:
+          type: string
+        mensaje:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        detalles:
+          type: object
+          additionalProperties:
+            type: string
